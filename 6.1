@@ -1,1 +1,55 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 5  // Размер матрицы
+
+// Функция для генерации матрицы смежности
+void generate_adjacency_matrix(int matrix[SIZE][SIZE]) {
+    srand(time(NULL));
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = i; j < SIZE; j++) {
+            if (i == j) {
+                matrix[i][j] = 0;
+            } else {
+                int edge = rand() % 10 + 1;  // Вес ребра от 1 до 10
+                int isEdge = rand() % 2;     // Случайное наличие ребра
+                if (isEdge) {
+                    matrix[i][j] = edge;
+                    matrix[j][i] = edge;
+                } else {
+                    matrix[i][j] = 0;
+                    matrix[j][i] = 0;
+                }
+            }
+        }
+    }
+}
+
+// Функция для вывода матрицы смежности на экран
+void print_adjacency_matrix(int matrix[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%d ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int M1[SIZE][SIZE], M2[SIZE][SIZE];
+
+    // Генерация матриц смежности
+    generate_adjacency_matrix(M1);
+    generate_adjacency_matrix(M2);
+
+    // Вывод матриц смежности на экран
+    printf("Матрица смежности графа G1:\n");
+    print_adjacency_matrix(M1);
+
+    printf("\nМатрица смежности графа G2:\n");
+    print_adjacency_matrix(M2);
+
+    return 0;
+}
