@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -36,6 +35,8 @@ void print_adjacency_matrix(int matrix[SIZE][SIZE]) {
         printf("\n");
     }
 }
+
+// Функция расщепления вершины
 void split_vertex(int matrix[SIZE][SIZE], int vertex) {
     int new_vertex = SIZE - 1;  // Предположим, что новая вершина добавляется в конец матрицы
     for (int i = 0; i < SIZE; i++) {
@@ -44,7 +45,9 @@ void split_vertex(int matrix[SIZE][SIZE], int vertex) {
             matrix[i][new_vertex] = matrix[vertex][i];
         }
     }
+    matrix[vertex][vertex] = 0;  // Расщепленная вершина больше не имеет ребра к самой себе
 }
+
 int main() {
     int M1[SIZE][SIZE], M2[SIZE][SIZE];
 
@@ -52,12 +55,19 @@ int main() {
     generate_adjacency_matrix(M1);
     generate_adjacency_matrix(M2);
 
-    // Вывод матриц смежности на экран
-    printf("Матрица смежности графа G1:\n");
+    // Вывод матриц смежности на экран до расщепления
+    printf("Матрица смежности графа G1 до расщепления:\n");
     print_adjacency_matrix(M1);
 
     printf("\nМатрица смежности графа G2:\n");
     print_adjacency_matrix(M2);
+
+    // Пример расщепления вершины
+    split_vertex(M1, 0);
+
+    // Вывод матрицы смежности на экран после расщепления
+    printf("\nМатрица смежности графа G1 после расщепления вершины 0:\n");
+    print_adjacency_matrix(M1);
 
     return 0;
 }
