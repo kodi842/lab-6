@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 5  // Размер матрицы
+
+// Функция для генерации случайной матрицы смежности
+void generateMatrix(int matrix[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            matrix[i][j] = rand() % 2;  // Генерация случайного числа 0 или 1
+        }
+    }
+}
+
+// Функция для вывода матрицы на экран
+void printMatrix(int matrix[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%d ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Функция для отождествления вершин
+void identifyVertices(int matrix[SIZE][SIZE], int v1, int v2) {
+    for (int i = 0; i < SIZE; i++) {
+        matrix[v1][i] = matrix[v1][i] || matrix[v2][i];
+        matrix[i][v1] = matrix[i][v1] || matrix[i][v2];
+    }
+    for (int i = 0; i < SIZE; i++) {
+        matrix[v2][i] = 0;
+        matrix[i][v2] = 0;
+    }
+}
+
+// Функция для стягивания ребра
+void contractEdge(int matrix[SIZE][SIZE], int v1, int v2) {
+    identifyVertices(matrix, v1, v2);
+}
+
+// Функция для расщепления вершины
+void splitVertex(int matrix[SIZE][SIZE], int v, int newV) {
+    for (int i = 0; i < SIZE; i++) {
+        matrix[newV][i] = matrix[v][i];
+        matrix[i][newV] = matrix[i][v];
+    }
+    matrix[v][newV] = 1;
+    matrix[newV][v] = 1;
+}
+
+// Функция для объединения графов
+void unionGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            result[i][j] = G1[i][j] || G2[i][j];
+        }
+    }
+}
+
+// Функция для пересечения графов
+void intersectGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            result[i][j] = G1[i][j] && G2[i][j];
+        }
+    }
+}
+
+// Функция для кольцевой суммы графов
+void ringSumGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            result[i][j] = G1[i][j] ^ G2[i][j];  // Операция XOR
+        }
+    }
+}
+
+int main() {
+    srand(time(0));
+
+    int M1[SIZE][SIZE], M2[SIZE][SIZE];
+    int result[SIZE][SIZE];
+
+    // Генерация и вывод первой матрицы
+    generateMatrix(M1);
+    printf("Матрица M1:\n");
+    printMatrix(M1);
+
+    // Генерация и вывод второй матрицы
+    generateMatrix(M2);
+    printf("Матрица M2:\n");
+    printMatrix(M2);
+
+    // Пример использования операций
+    identifyVertices(M1, 0, 1);
+    printf("Матрица после отождествления вершин 0 и 1 в M1:\n");
+    printMatrix(M1);
+
+    contractEdge(M2, 2, 3);
+    printf("Матрица после стягивания ребра между вершинами 2 и 3 в M2:\n");
+    printMatrix(M2);
+
+    splitVertex(M1, 4, 3);
+    printf("Матрица после расщепления вершины 4 в M1:\n");
+    printMatrix(M1);
+
+    unionGraphs(result, M1, M2);
+    printf("Матрица после объединения M1 и M2:\n");
+    printMatrix(result);
+
+    intersectGraphs(result, M1, M2);
+    printf("Матрица после пересечения M1 и M2:\n");
+    printMatrix(result);
+
+    ringSumGraphs(result, M1, M2);
+    printf("Матрица после кольцевой суммы M1 и M2:\n");
+    printMatrix(result);
+
+    return 0;
+}
