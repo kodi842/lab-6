@@ -1,122 +1,178 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define SIZE 5  // Размер матрицы
-
-// Функция для генерации случайной матрицы смежности
-void generateMatrix(int matrix[SIZE][SIZE]) {
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
-            matrix[i][j] = rand() % 2;  // Генерация случайного числа 0 или 1
+void generateMatrix(int** matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = i; j < size; j++) {
+            if (i == j) {
+                matrix[i][j] = 0;
+            }
+            else {
+                matrix[i][j] = matrix[j][i] = rand() % 2;
+            }
         }
     }
 }
 
-// Функция для вывода матрицы на экран
-void printMatrix(int matrix[SIZE][SIZE]) {
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
+void printMatrix(int** matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             printf("%d ", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
-// Функция для отождествления вершин
-void identifyVertices(int matrix[SIZE][SIZE], int v1, int v2) {
-    for (int i = 0; i < SIZE; i++) {
-        matrix[v1][i] = matrix[v1][i] || matrix[v2][i];
-        matrix[i][v1] = matrix[i][v1] || matrix[i][v2];
+void mergeVertices(int** matrix, int size, int v1, int v2) {
+    if (v1 >= size || v2 >= size || v1 < 0 || v2 < 0) {
+        printf("Ошибка: некорректные номера вершин\n");
+        return;
     }
-    for (int i = 0; i < SIZE; i++) {
+    for (int i = 0; i < size; i++) {
+        if (i != v1 && i != v2) {
+            matrix[v1][i] = matrix[v1][i] || matrix[v2][i];
+            matrix[i][v1] = matrix[i][v1] || matrix[i][v2];
+        }
+    }
+    for (int i = 0; i < size; i++) {
         matrix[v2][i] = 0;
         matrix[i][v2] = 0;
     }
 }
 
-// Функция для стягивания ребра
-void contractEdge(int matrix[SIZE][SIZE], int v1, int v2) {
-    identifyVertices(matrix, v1, v2);
+void contractEdge(int** matrix, int size, int v1, int v2) {
+    mergeVertices(matrix, size, v1, v2);
 }
 
-// Функция для расщепления вершины
-void splitVertex(int matrix[SIZE][SIZE], int v, int newV) {
-    for (int i = 0; i < SIZE; i++) {
-        matrix[newV][i] = matrix[v][i];
-        matrix[i][newV] = matrix[i][v];
+void splitVertex(int** matrix, int size, int v, int new_v) {
+    if (v >= size || new_v >= size || v < 0 || new_v < 0) {
+        printf("Ошибка: некорректные номера вершин\n");
+        return;
     }
-    matrix[v][newV] = 1;
-    matrix[newV][v] = 1;
+    for (int i = 0; i < size; i++) {
+        if (matrix[v][i] == 1 && i != new_v) {
+            matrix[new_v][i] = matrix[v][i];
+            matrix[i][new_v] = matrix[i][v];
+        }
+    }
+    matrix[v][new_v] = 1;
+    matrix[new_v][v] = 1;
 }
 
-// Функция для объединения графов
-void unionGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
-            result[i][j] = G1[i][j] || G2[i][j];
+void unionGraphs(int** G, int** G1, int** G2, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            G[i][j] = G1[i][j] || G2[i][j];
         }
     }
 }
 
-// Функция для пересечения графов
-void intersectGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
-            result[i][j] = G1[i][j] && G2[i][j];
+void intersectGraphs(int** G, int** G1, int** G2, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            G[i][j] = G1[i][j] && G2[i][j];
         }
     }
 }
 
-// Функция для кольцевой суммы графов
-void ringSumGraphs(int result[SIZE][SIZE], int G1[SIZE][SIZE], int G2[SIZE][SIZE]) {
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
-            result[i][j] = G1[i][j] ^ G2[i][j];  // Операция XOR
+void ringSumGraphs(int** G, int** G1, int** G2, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            G[i][j] = G1[i][j] ^ G2[i][j];
         }
     }
 }
 
 int main() {
-    srand(time(0));
+    srand(time(0));  // Инициализация генератора случайных чисел
 
-    int M1[SIZE][SIZE], M2[SIZE][SIZE];
-    int result[SIZE][SIZE];
+    int size;
+    printf("Введите размер матрицы: ");
+    scanf("%d", &size);
 
-    // Генерация и вывод первой матрицы
-    generateMatrix(M1);
-    printf("Матрица M1:\n");
-    printMatrix(M1);
+    if (size <= 0) {
+        printf("Ошибка: размер матрицы должен быть положительным\n");
+        return 1;
+    }
 
-    // Генерация и вывод второй матрицы
-    generateMatrix(M2);
-    printf("Матрица M2:\n");
-    printMatrix(M2);
+    // Динамическое выделение памяти для матриц
+    int** M1 = (int**)malloc(size * sizeof(int*));
+    int** M2 = (int**)malloc(size * sizeof(int*));
+    int** G = (int**)malloc(size * sizeof(int*));
+    for (int i = 0; i < size; i++) {
+        M1[i] = (int*)malloc(size * sizeof(int));
+        M2[i] = (int*)malloc(size * sizeof(int));
+        G[i] = (int*)malloc(size * sizeof(int));
+    }
 
-    // Пример использования операций
-    identifyVertices(M1, 0, 1);
-    printf("Матрица после отождествления вершин 0 и 1 в M1:\n");
-    printMatrix(M1);
+    generateMatrix(M1, size);
+    generateMatrix(M2, size);
 
-    contractEdge(M2, 2, 3);
-    printf("Матрица после стягивания ребра между вершинами 2 и 3 в M2:\n");
-    printMatrix(M2);
+    printf("Матрица М1:\n");
+    printMatrix(M1, size);
 
-    splitVertex(M1, 4, 3);
-    printf("Матрица после расщепления вершины 4 в M1:\n");
-    printMatrix(M1);
+    printf("\nМатрица М2:\n");
+    printMatrix(M2, size);
 
-    unionGraphs(result, M1, M2);
-    printf("Матрица после объединения M1 и M2:\n");
-    printMatrix(result);
+    // Операции с графами
+    int v1, v2, new_v;
 
-    intersectGraphs(result, M1, M2);
-    printf("Матрица после пересечения M1 и M2:\n");
-    printMatrix(result);
+    // Объединение вершин
+    printf("\nВведите две вершины для объединения (v1 v2): ");
+    if (scanf("%d %d", &v1, &v2) != 2 || v1 >= size || v2 >= size || v1 < 0 || v2 < 0) {
+        printf("Ошибка: некорректные номера вершин\n");
+        return 1;
+    }
+    mergeVertices(M1, size, v1, v2);
+    printf("\nМатрица М1 после объединения вершин %d и %d:\n", v1, v2);
+    printMatrix(M1, size);
 
-    ringSumGraphs(result, M1, M2);
-    printf("Матрица после кольцевой суммы M1 и M2:\n");
-    printMatrix(result);
+    // Стягивание ребра
+    printf("\nВведите две вершины для стягивания ребра (v1 v2): ");
+    if (scanf("%d %d", &v1, &v2) != 2 || v1 >= size || v2 >= size || v1 < 0 || v2 < 0) {
+        printf("Ошибка: некорректные номера вершин\n");
+        return 1;
+    }
+    contractEdge(M2, size, v1, v2);
+    printf("\nМатрица М2 после стягивания ребра между %d и %d:\n", v1, v2);
+    printMatrix(M2, size);
+
+    // Расщепление вершины
+    printf("\nВведите вершину для расщепления и новую вершину (v new_v): ");
+    if (scanf("%d %d", &v1, &new_v) != 2 || v1 >= size || new_v >= size || v1 < 0 || new_v < 0) {
+        printf("Ошибка: некорректные номера вершин\n");
+        return 1;
+    }
+    splitVertex(M1, size, v1, new_v);
+    printf("\nМатрица М1 после расщепления вершины %d в %d:\n", v1, new_v);
+    printMatrix(M1, size);
+
+    // Объединение графов
+    unionGraphs(G, M1, M2, size);
+    printf("\nОбъединение G = G1 ∪ G2:\n");
+    printMatrix(G, size);
+
+    // Пересечение графов
+    intersectGraphs(G, M1, M2, size);
+    printf("\nПересечение G = G1 ∩ G2:\n");
+    printMatrix(G, size);
+
+    // Кольцевая сумма графов
+    ringSumGraphs(G, M1, M2, size);
+    printf("\nКольцевая сумма G = G1 ⊕ G2:\n");
+    printMatrix(G, size);
+
+    // Освобождение памяти
+    for (int i = 0; i < size; i++) {
+        free(M1[i]);
+        free(M2[i]);
+        free(G[i]);
+    }
+    free(M1);
+    free(M2);
+    free(G);
 
     return 0;
 }
